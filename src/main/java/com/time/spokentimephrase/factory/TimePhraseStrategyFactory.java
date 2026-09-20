@@ -18,7 +18,7 @@ public class TimePhraseStrategyFactory {
 
         Languages language;
         try {
-            language = Languages.valueOf(lang.toUpperCase());
+            language = Languages.valueOf(lang.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Unsupported language: " + lang);
         }
