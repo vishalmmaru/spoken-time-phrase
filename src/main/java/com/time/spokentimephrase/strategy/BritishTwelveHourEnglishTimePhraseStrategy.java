@@ -25,6 +25,7 @@ public class BritishTwelveHourEnglishTimePhraseStrategy extends TwelveHourEnglis
                     Map.entry(25, "twenty-five past"),
                     Map.entry(30, "half past"),
                     Map.entry(35, "twenty-five to"),
+                    Map.entry(40, "twenty to"),
                     Map.entry(45, "quarter to"),
                     Map.entry(50, "ten to"),
                     Map.entry(55, "five to"));
