@@ -1,5 +1,7 @@
 package com.time.spokentimephrase.strategy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -7,6 +9,7 @@ import java.util.*;
 @Component
 public class BritishTwelveHourEnglishTimePhraseStrategy extends TwelveHourEnglishStrategy {
 
+    private static final Logger log = LoggerFactory.getLogger(BritishTwelveHourEnglishTimePhraseStrategy.class);
     private static final Map<String, String> FIXED;
     private static final Map<Integer, String> HOURS;
     private static final Map<Integer, String> MINUTES;
@@ -33,7 +36,10 @@ public class BritishTwelveHourEnglishTimePhraseStrategy extends TwelveHourEnglis
 
     @Override
     public String generateSpokenPhrase(String time) {
-        if (!isValidTimeFormat(time)) throw new IllegalArgumentException(String.format("Invalid Time, should be in 12-hour format as '00:00', requested: '%s'", time));
+        if (!isValidTimeFormat(time)) {
+            log.warn("Rejected request: '{}' does not match the expected time format", time);
+            throw new IllegalArgumentException(String.format("Invalid Time, should be in 12-hour format as '00:00', requested: '%s'", time));
+        }
         time = time.trim();
 
         // get hour and minute from the requested time
@@ -44,14 +50,19 @@ public class BritishTwelveHourEnglishTimePhraseStrategy extends TwelveHourEnglis
         // normalize time and find
         // if a fixed phrase for the whole time can be returned
         time = String.format("%02d:%02d", hour, minute);
-        if (FIXED.containsKey(time)) return FIXED.get(time);
+        if (FIXED.containsKey(time)) {
+            log.debug("'{}' matched a fixed phrase: '{}'", time, FIXED.get(time));
+            return FIXED.get(time);
+        }
 
         String hourPhrase = getHourPhrase(hour, minute);
         String minutesPhrase = getMinutesPhrase(minute);
 
         // set the order of phrases based on the minutes
         boolean minutesFirst = minute != 0 && MINUTES.containsKey(minute);
-        return minutesFirst ? minutesPhrase + " " + hourPhrase : hourPhrase + " " + minutesPhrase;
+        String phrase = minutesFirst ? minutesPhrase + " " + hourPhrase : hourPhrase + " " + minutesPhrase;
+        log.debug("Generated phrase for '{}': '{}'", time, phrase);
+        return phrase;
     }
 
     // validate hour and minute value for 12-hour format
@@ -61,10 +72,16 @@ public class BritishTwelveHourEnglishTimePhraseStrategy extends TwelveHourEnglis
         String[] parts = time.split(":");
 
         int hour = Integer.parseInt(parts[0]);
-        if (hour > 12 || hour < 0) throw new IllegalArgumentException("Invalid Time Requested with hour: " + hour);
+        if (hour > 12 || hour < 0) {
+            log.warn("Rejected request: hour '{}' is outside the 12-hour range", hour);
+            throw new IllegalArgumentException("Invalid Time Requested with hour: " + hour);
+        }
 
         int minutes = Integer.parseInt(parts[1]);
-        if (minutes > 59 || minutes < 0) throw new IllegalArgumentException("Invalid Time Requested with minutes: " + minutes);
+        if (minutes > 59 || minutes < 0) {
+            log.warn("Rejected request: minutes '{}' is outside the valid range", minutes);
+            throw new IllegalArgumentException("Invalid Time Requested with minutes: " + minutes);
+        }
 
         return new int[]{hour, minutes};
     }

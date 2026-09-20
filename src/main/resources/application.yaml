@@ -3,3 +3,6 @@ spring:
     name: spoken-time-phrase
 server:
   port: 8080
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [correlationId=%X{correlationId:-none}] %logger{36} - %msg%n"
